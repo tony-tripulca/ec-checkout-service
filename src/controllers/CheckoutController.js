@@ -2,6 +2,7 @@ import Logger from "../util/logger.js";
 import Validator from "../util/validator.js";
 
 import MongodbService from "../services/MongodbService.js";
+import EmailService from "../services/EmailService.js";
 
 export default {
   /**
@@ -54,7 +55,19 @@ export default {
       amount: req.body.amount,
       paid: false,
     })
-      .then((response) => {
+      .then(async (response) => {
+        await EmailService.sendMail({
+          recepient: req.body.email,
+          subject: "Added to Cart",
+          html: `
+          <p>Hi ${req.body.email},</p>
+          <p>Your order ${req.body.name} is waiting for you.</p>
+          <p>Name: ${req.body.name}</p>
+          <p>Description: ${req.body.description}</p>
+          <p>Amount: $${req.body.amount}</p>
+          `,
+        });
+
         let msg = { msg: `${req.method} ${req.originalUrl} ${res.statusCode}` };
         Logger.out([JSON.stringify(msg)]);
         return res.json(response);
